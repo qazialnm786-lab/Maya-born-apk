@@ -37,21 +37,28 @@ class MayaIntelligenceEngine {
 
     suspend fun getResponse(
         prompt: String,
-        recentHistory: List<ChatMessageEntity> = emptyList()
+        recentHistory: List<ChatMessageEntity> = emptyList(),
+        customApiKey: String = ""
     ): String = withContext(Dispatchers.IO) {
-        val apiKey = try {
+        val buildKey = try {
             BuildConfig.GEMINI_API_KEY
         } catch (e: Exception) {
             ""
         }
 
-        val hasValidKey = apiKey.isNotBlank() &&
-                !apiKey.equals("MY_GEMINI_API_KEY", ignoreCase = true) &&
-                !apiKey.equals("TODO", ignoreCase = true)
+        val effectiveKey = if (customApiKey.isNotBlank()) {
+            customApiKey.trim()
+        } else {
+            buildKey.trim()
+        }
+
+        val hasValidKey = effectiveKey.isNotBlank() &&
+                !effectiveKey.equals("MY_GEMINI_API_KEY", ignoreCase = true) &&
+                !effectiveKey.equals("TODO", ignoreCase = true)
 
         if (hasValidKey) {
             try {
-                val apiResult = callGeminiApi(prompt, recentHistory, apiKey)
+                val apiResult = callGeminiApi(prompt, recentHistory, effectiveKey)
                 if (apiResult.isNotBlank()) {
                     return@withContext apiResult
                 }

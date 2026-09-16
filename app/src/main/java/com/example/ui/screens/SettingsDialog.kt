@@ -21,13 +21,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Key
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Switch
@@ -44,8 +50,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -74,12 +83,10 @@ fun SettingsDialog(
     var autoVoice by remember(settings?.autoVoice) { mutableStateOf(settings?.autoVoice ?: true) }
     var language by remember(settings?.preferredLanguage) { mutableStateOf(settings?.preferredLanguage ?: "auto") }
 
-    val hasApiKey = try {
-        BuildConfig.GEMINI_API_KEY.isNotBlank() &&
-                !BuildConfig.GEMINI_API_KEY.equals("MY_GEMINI_API_KEY", ignoreCase = true)
-    } catch (e: Exception) {
-        false
-    }
+    val clipboardManager = LocalClipboardManager.current
+    var apiKeyInput by remember { mutableStateOf(viewModel.getEffectiveApiKey()) }
+    var isApiKeyVisible by remember { mutableStateOf(false) }
+    var apiKeySaveFeedback by remember { mutableStateOf<String?>(null) }
 
     Dialog(onDismissRequest = onDismiss) {
         GlassmorphicCard(
@@ -263,15 +270,19 @@ fun SettingsDialog(
 
                 Spacer(modifier = Modifier.height(18.dp))
 
-                // Section 3: AI Neural Core Status
+                // Section 3: AI Neural Core & API Key
                 Text(
-                    text = "AI NEURAL ENGINE",
+                    text = "GEMINI API KEY (API कुंजी)",
                     color = NeonCyan,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp
                 )
                 Spacer(modifier = Modifier.height(8.dp))
+
+                val hasActiveKey = apiKeyInput.isNotBlank() &&
+                        !apiKeyInput.equals("MY_GEMINI_API_KEY", ignoreCase = true) &&
+                        !apiKeyInput.equals("TODO", ignoreCase = true)
 
                 Box(
                     modifier = Modifier
@@ -286,11 +297,11 @@ fun SettingsDialog(
                                 modifier = Modifier
                                     .size(8.dp)
                                     .clip(CircleShape)
-                                    .background(if (hasApiKey) EmeraldGlow else NeonMagenta)
+                                    .background(if (hasActiveKey) EmeraldGlow else Color(0xFFFFB703))
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = if (hasApiKey) "Gemini 3.5 Flash Active" else "Intelligent Local Core Active",
+                                text = if (hasActiveKey) "Gemini 3.5 Flash Active 🚀" else "Offline Local Core Active",
                                 color = TextPrimary,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.SemiBold
@@ -298,10 +309,10 @@ fun SettingsDialog(
                         }
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = if (hasApiKey) {
-                                "Connected via GEMINI_API_KEY. Multilingual reasoning, math solving, and coding fully enabled."
+                            text = if (hasActiveKey) {
+                                "Connected to Gemini 3.5 Flash. Live reasoning, multilingual dialogue, math and code generation are fully online."
                             } else {
-                                "Running with built-in intelligent engine. To unlock live Gemini 3.5 Flash reasoning, configure GEMINI_API_KEY in the AI Studio Secrets panel."
+                                "Running with built-in intelligent engine. Paste your free Gemini API key below to unlock live Google Gemini AI on your phone!"
                             },
                             color = TextSecondary,
                             fontSize = 11.sp,
@@ -309,6 +320,154 @@ fun SettingsDialog(
                         )
                     }
                 }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // API Key Text Field
+                OutlinedTextField(
+                    value = apiKeyInput,
+                    onValueChange = {
+                        apiKeyInput = it
+                        apiKeySaveFeedback = null
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("api_key_input"),
+                    label = { Text("Gemini API Key (API कुंजी)", fontSize = 12.sp) },
+                    placeholder = { Text("AIzaSy...", color = TextTertiary, fontSize = 12.sp) },
+                    singleLine = true,
+                    visualTransformation = if (isApiKeyVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Key,
+                            contentDescription = "API Key",
+                            tint = NeonCyan,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    },
+                    trailingIcon = {
+                        IconButton(onClick = { isApiKeyVisible = !isApiKeyVisible }) {
+                            Icon(
+                                imageVector = if (isApiKeyVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                contentDescription = if (isApiKeyVisible) "Hide Key" else "Show Key",
+                                tint = TextSecondary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = NeonViolet,
+                        unfocusedBorderColor = Color(0x44FFFFFF),
+                        focusedLabelColor = NeonCyan,
+                        unfocusedLabelColor = TextSecondary,
+                        focusedTextColor = TextPrimary,
+                        unfocusedTextColor = TextPrimary,
+                        cursorColor = NeonCyan
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Action Buttons for API Key (Paste, Save, Clear)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Paste Button
+                    Button(
+                        onClick = {
+                            val clip = clipboardManager.getText()?.text
+                            if (!clip.isNullOrBlank()) {
+                                apiKeyInput = clip.trim()
+                                viewModel.saveApiKey(apiKeyInput)
+                                apiKeySaveFeedback = "Pasted & saved! ✅"
+                            } else {
+                                apiKeySaveFeedback = "Clipboard is empty"
+                            }
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(38.dp)
+                            .testTag("paste_api_key_button"),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0x3326194A)),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ContentPaste,
+                            contentDescription = null,
+                            tint = NeonCyan,
+                            modifier = Modifier.size(15.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Paste", color = NeonCyan, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                    }
+
+                    // Save Button
+                    Button(
+                        onClick = {
+                            viewModel.saveApiKey(apiKeyInput)
+                            apiKeySaveFeedback = if (apiKeyInput.isNotBlank()) "Key Saved! ✅" else "Offline mode set"
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(38.dp)
+                            .testTag("save_api_key_button"),
+                        colors = ButtonDefaults.buttonColors(containerColor = NeonViolet),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(15.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Save", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                    }
+
+                    // Clear Button
+                    if (apiKeyInput.isNotBlank()) {
+                        OutlinedButton(
+                            onClick = {
+                                apiKeyInput = ""
+                                viewModel.saveApiKey("")
+                                apiKeySaveFeedback = "Key cleared (Offline mode)"
+                            },
+                            modifier = Modifier
+                                .height(38.dp)
+                                .testTag("clear_api_key_button"),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = NeonMagenta),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = null,
+                                tint = NeonMagenta,
+                                modifier = Modifier.size(14.dp)
+                            )
+                        }
+                    }
+                }
+
+                if (apiKeySaveFeedback != null) {
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = apiKeySaveFeedback ?: "",
+                        color = if (apiKeySaveFeedback?.contains("empty") == true) NeonMagenta else EmeraldGlow,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(6.dp))
+                // Free key instruction in Hinglish / English
+                Text(
+                    text = "💡 Tip: aistudio.google.com se free Gemini API key generate karke yahan paste karein.",
+                    color = TextTertiary,
+                    fontSize = 10.sp,
+                    lineHeight = 14.sp
+                )
 
                 Spacer(modifier = Modifier.height(18.dp))
 
@@ -341,6 +500,7 @@ fun SettingsDialog(
                 // Save / Done Button
                 Button(
                     onClick = {
+                        viewModel.saveApiKey(apiKeyInput)
                         viewModel.updateSettings(
                             pitch = pitch,
                             rate = rate,

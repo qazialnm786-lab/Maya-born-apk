@@ -11,5 +11,6 @@ data class UserSettingsEntity(
     val speechPitch: Float = 1.25f, // Sweet female anime pitch
     val speechRate: Float = 1.0f,
     val preferredLanguage: String = "auto", // auto, hinglish, english, hindi
-    val userName: String = "Friend"
+    val userName: String = "Friend",
+    val customApiKey: String = ""
 )

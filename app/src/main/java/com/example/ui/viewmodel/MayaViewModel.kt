@@ -179,7 +179,8 @@ class MayaViewModel(application: Application) : AndroidViewModel(application) {
 
             // 3. Generate response using Gemini or Local Fallback
             val history = repository.getRecentMessages(8)
-            val response = intelligenceEngine.getResponse(trimmed, history)
+            val effectiveKey = getEffectiveApiKey()
+            val response = intelligenceEngine.getResponse(trimmed, history, effectiveKey)
 
             // 4. Save MAYA's response
             val mayaMsgId = repository.addMessage(
@@ -305,6 +306,40 @@ class MayaViewModel(application: Application) : AndroidViewModel(application) {
             )
             repository.updateSettings(updated)
             voiceManager.configureFemaleVoice(pitch, rate)
+        }
+    }
+
+    fun getEffectiveApiKey(): String {
+        val prefs = getApplication<Application>().getSharedPreferences("maya_prefs", android.content.Context.MODE_PRIVATE)
+        val prefKey = prefs.getString("gemini_api_key", "") ?: ""
+        if (prefKey.isNotBlank()) return prefKey.trim()
+        val dbKey = settings.value?.customApiKey ?: ""
+        if (dbKey.isNotBlank()) return dbKey.trim()
+        return try {
+            com.example.BuildConfig.GEMINI_API_KEY.trim()
+        } catch (e: Exception) {
+            ""
+        }
+    }
+
+    fun hasValidApiKey(): Boolean {
+        val key = getEffectiveApiKey()
+        return key.isNotBlank() &&
+                !key.equals("MY_GEMINI_API_KEY", ignoreCase = true) &&
+                !key.equals("TODO", ignoreCase = true)
+    }
+
+    fun saveApiKey(apiKey: String) {
+        val cleanKey = apiKey.trim()
+        val prefs = getApplication<Application>().getSharedPreferences("maya_prefs", android.content.Context.MODE_PRIVATE)
+        prefs.edit().putString("gemini_api_key", cleanKey).apply()
+
+        viewModelScope.launch {
+            val current = repository.getSettings()
+            repository.updateSettings(current.copy(customApiKey = cleanKey))
+            _uiState.value = _uiState.value.copy(
+                statusBannerMessage = if (cleanKey.isNotBlank()) "Gemini API Key Saved! 🚀" else "API Key removed (Offline mode)"
+            )
         }
     }
 

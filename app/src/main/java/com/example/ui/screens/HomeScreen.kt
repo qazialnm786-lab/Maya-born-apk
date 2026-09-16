@@ -39,6 +39,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.automirrored.outlined.VolumeMute
+import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -203,6 +204,44 @@ fun HomeScreen(
                             modifier = Modifier.size(20.dp)
                         )
                     }
+                }
+            }
+
+            val hasApiKey = viewModel.hasValidApiKey()
+            if (!hasApiKey) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color(0x33FFB703))
+                        .border(1.dp, Color(0x66FFB703), RoundedCornerShape(10.dp))
+                        .clickable { viewModel.openSettings() }
+                        .padding(horizontal = 12.dp, vertical = 7.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Key,
+                            contentDescription = "API Key",
+                            tint = Color(0xFFFFB703),
+                            modifier = Modifier.size(15.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Tap to enter Gemini API Key (API Key daalein)",
+                            color = Color(0xFFFFD166),
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                    Text(
+                        text = "Enter →",
+                        color = Color(0xFFFFB703),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
 

@@ -41,9 +41,11 @@ import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -235,7 +237,65 @@ fun ChatScreen(
                             modifier = Modifier.size(18.dp)
                         )
                     }
+
+                    Spacer(modifier = Modifier.width(6.dp))
+
+                    // Settings Button
+                    IconButton(
+                        onClick = { viewModel.openSettings() },
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(Color(0x22FFFFFF))
+                            .testTag("chat_settings_button")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Settings",
+                            tint = TextSecondary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
+            }
+
+            // API Key Prompt Banner (if offline)
+            val hasApiKey = viewModel.hasValidApiKey()
+            if (!hasApiKey) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color(0x22FFB703))
+                        .border(1.dp, Color(0x44FFB703), RoundedCornerShape(8.dp))
+                        .clickable { viewModel.openSettings() }
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Key,
+                            contentDescription = null,
+                            tint = Color(0xFFFFB703),
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Offline Mode - Tap here to enter Gemini API Key",
+                            color = Color(0xFFFFD166),
+                            fontSize = 11.sp
+                        )
+                    }
+                    Text(
+                        text = "Enter Key →",
+                        color = Color(0xFFFFB703),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
             }
 
             // 2. Chat Messages List
