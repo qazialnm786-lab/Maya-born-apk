@@ -1,0 +1,58 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Outer glowing tech hexagon / shield -->
+    <path
+        android:strokeWidth="2.0"
+        android:strokeColor="#8000E5FF"
+        android:fillColor="#1A7C4DFF"
+        android:pathData="M54,26 L78,40 L78,68 L54,82 L30,68 L30,40 Z" />
+
+    <!-- Inner tech core ring -->
+    <path
+        android:strokeWidth="1.5"
+        android:strokeColor="#CCB388FF"
+        android:fillColor="#00000000"
+        android:pathData="M54,54 m-16,0 a16,16 0 1,0 32,0 a16,16 0 1,0 -32,0" />
+
+    <!-- MAYA Futuristic Anime AI Avatar Emblem: Headphone + Face silhouette + AI Spark -->
+    <!-- Headphone arch -->
+    <path
+        android:pathData="M38,50 C38,40 44,34 54,34 C64,34 70,40 70,50"
+        android:strokeWidth="3"
+        android:strokeColor="#00E5FF"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+
+    <!-- Headphone ear pads -->
+    <path
+        android:pathData="M34,48 L40,48 L40,58 L34,58 Z"
+        android:fillColor="#00E5FF" />
+    <path
+        android:pathData="M68,48 L74,48 L74,58 L68,58 Z"
+        android:fillColor="#00E5FF" />
+
+    <!-- AI Spark in center / Maya Face Core -->
+    <path
+        android:pathData="M54,42 L56.5,50.5 L65,53 L56.5,55.5 L54,64 L51.5,55.5 L43,53 L51.5,50.5 Z"
+        android:fillColor="#FFFFFF" />
+
+    <!-- Voice Waveform Bars beneath spark -->
+    <path
+        android:pathData="M44,70 L44,74 M49,67 L49,77 M54,65 L54,79 M59,67 L59,77 M64,70 L64,74"
+        android:strokeWidth="2"
+        android:strokeColor="#D500F9"
+        android:strokeLineCap="round" />
+
+    <!-- Small accent dots -->
+    <path
+        android:pathData="M54,26 m-2,0 a2,2 0 1,0 4,0 a2,2 0 1,0 -4,0"
+        android:fillColor="#00E5FF" />
+    <path
+        android:pathData="M54,82 m-2,0 a2,2 0 1,0 4,0 a2,2 0 1,0 -4,0"
+        android:fillColor="#D500F9" />
+</vector>

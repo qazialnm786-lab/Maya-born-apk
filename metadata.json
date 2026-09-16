@@ -1,0 +1,6 @@
+{
+  "name": "MAYA AI",
+  "description": "Advanced personal AI assistant with interactive 3D anime avatar, natural female voice, and multilingual intelligence.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
